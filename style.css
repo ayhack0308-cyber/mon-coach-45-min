@@ -1,0 +1,29 @@
+:root{--bg:#f3f6fc;--c:#fff;--t:#0b1530;--m:#56648a;--b:#1e40af;--e:#2563ff;--y:#ffc400;--ok:#16a34a;--bd:#dbe3f2;color-scheme:light}
+[data-theme=dark]{--bg:#070d22;--c:#0f1a3a;--t:#eef2ff;--m:#9fb0dc;--b:#60a5fa;--bd:#22346a;color-scheme:dark}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--t);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{background:linear-gradient(135deg,#0b1b4d,#1e40af);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px}
+header b{font-size:20px;letter-spacing:.5px}header span{color:var(--y)}header small{display:block;opacity:.8;font-size:12px}
+main{max-width:760px;margin:0 auto;padding:14px;outline:0;animation:f .25s}@keyframes f{from{opacity:0;transform:translateY(6px)}}
+h1{font-size:24px;margin:.2em 0}h2{font-size:18px;margin:.2em 0 .5em}h3{font-size:15px;margin:.9em 0 .3em;color:var(--b)}
+.m{color:var(--m)}.card{background:var(--c);border:1px solid var(--bd);border-radius:18px;padding:14px;margin:12px 0}
+.btn{min-height:48px;padding:10px 16px;border:0;border-radius:14px;background:var(--e);color:#fff;font:600 16px inherit;cursor:pointer}
+.btn.y{background:var(--y);color:#111}.btn.g{background:transparent;color:var(--b);border:1px solid var(--bd)}.btn.r{background:#dc2626}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.sp{justify-content:space-between}
+.bar{height:12px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--e),var(--y));transition:width .4s}
+.it{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}.it:last-child{border:0}
+.it input{width:28px;height:28px;accent-color:var(--ok);flex:none}.it .n{flex:1;cursor:pointer}.it.d .n{opacity:.55;text-decoration:line-through}
+.chip{display:inline-block;padding:8px 14px;border-radius:99px;border:1px solid var(--bd);background:var(--c);color:var(--t);margin:3px;cursor:pointer;min-height:40px;font:inherit}.chip.on{background:var(--e);color:#fff}
+.big{font:800 44px/1.1 ui-monospace,monospace;text-align:center;margin:6px 0;color:var(--e)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.st b{display:block;font-size:26px;color:var(--e)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--c);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--m);padding:8px 0 6px;font:11px inherit;min-height:56px;cursor:pointer}nav button span{display:block;font-size:20px}nav .on{color:var(--e);font-weight:700}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.cal button{aspect-ratio:1;border:1px solid var(--bd);border-radius:12px;background:var(--c);color:var(--t);font:inherit;cursor:pointer}
+.cal .ok{background:var(--ok);color:#fff}.cal .pa{background:var(--y);color:#111}.cal .re{background:var(--bd);color:var(--m)}.cal .fu{opacity:.5}.cal .ms{border-color:#dc2626}.cal .to{outline:3px solid var(--e)}.cal .se{box-shadow:0 0 0 3px var(--y)}
+#ov{position:fixed;inset:0;background:#000b;z-index:9;overflow:auto;padding:16px}#ov>div{max-width:640px;margin:0 auto;background:var(--c);border-radius:20px;padding:16px}
+svg.il{width:100%;height:auto;color:var(--e);background:var(--bg);border-radius:14px}svg.il text{fill:var(--m);font:8px sans-serif}
+input,select{width:100%;min-height:44px;padding:8px 10px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--t);font:inherit}label.f{display:block;margin:8px 0;font-size:14px;color:var(--m)}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px;border-bottom:1px solid var(--bd);text-align:center}
+:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+@media(min-width:800px){main{padding:24px}nav{justify-content:center}nav button{max-width:110px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
