@@ -12,7 +12,7 @@ const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 function clean(o,keep){if(!o||typeof o!=='object'||Array.isArray(o))throw 0;const r=DEF(),re=/^\d{4}-\d{2}-\d{2}$/,n=(x,a,b)=>typeof x=='number'&&isFinite(x)&&x>=a&&x<=b,p=o.p&&typeof o.p=='object'?o.p:{};
  ['age','h','w'].forEach(k=>{if(n(p[k],0,400))r.p[k]=p[k]});if(typeof p.start=='string'&&re.test(p.start))r.p.start=p.start;
  if(['chrono','reps'].includes(p.mode))r.p.mode=p.mode;if(['auto','light','dark'].includes(p.theme))r.p.theme=p.theme;if(['fr','en'].includes(p.lang))r.p.lang=p.lang;
- ['beep','auto','ok','tick','aero'].forEach(k=>{if(typeof p[k]=='boolean')r.p[k]=p[k]});if(n(p.vol,0,1))r.p.vol=p.vol;if(p.rest===''||n(p.rest,0,600))r.p.rest=p.rest;
+ ['beep','auto','ok','tick','aero','own'].forEach(k=>{if(typeof p[k]=='boolean')r.p[k]=p[k]});if(n(p.vol,0,1))r.p.vol=p.vol;if(typeof p.style=='string'&&(p.style=='auto'||['dance','afro','hiphop','latin'].includes(p.style)))r.p.style=p.style;if(p.rest===''||n(p.rest,0,600))r.p.rest=p.rest;
  if(typeof p.name=='string')r.p.name=p.name.slice(0,20);if(Array.isArray(p.eq))r.p.eq=p.eq.filter(x=>typeof x=='string'&&EQ.some(q=>q[0]==x));
  if(p.music&&typeof p.music=='object'){r.p.music.on=p.music.on===true;if(typeof p.music.url=='string'&&p.music.url.length<300&&musUrl(p.music.url))r.p.music.url=p.music.url}
  if(keep&&typeof p.pin=='string'&&/^[0-9a-f]{64}$/.test(p.pin)&&typeof p.salt=='string'&&p.salt.length<40){r.p.pin=p.pin;r.p.salt=p.salt}
@@ -21,7 +21,7 @@ function clean(o,keep){if(!o||typeof o!=='object'||Array.isArray(o))throw 0;cons
  if(Array.isArray(o.body))r.body=o.body.slice(0,400).filter(e=>e&&re.test(e.d)).map(e=>{const x={d:e.d};['w','h','ch','ar','wa','th','pu','pl'].forEach(f=>{if(n(e[f],0,5000))x[f]=e[f]});return x});
  if(Array.isArray(o.free))r.free=o.free.slice(-500).filter(e=>e&&re.test(e.d)&&n(e.min,0,1000)&&n(e.n,0,1000)&&Array.isArray(e.parts)).map(e=>({d:e.d,min:e.min,n:e.n,parts:e.parts.filter(x=>typeof x=='string').slice(0,12).map(x=>x.slice(0,30))}));
  return r}
-const DEF=()=>({p:{tick:true,aero:true,vol:.5,lang:'fr',pin:'',salt:'',name:'',eq:[],ok:false,music:{on:false,url:''},age:19,h:172,w:60,mode:'chrono',theme:'auto',beep:true,auto:false,rest:'',start:key(new Date())},done:{},full:{},pct:{},secs:{},water:{},body:[]});
+const DEF=()=>({p:{style:'auto',own:true,tick:true,aero:true,vol:.5,lang:'fr',pin:'',salt:'',name:'',eq:[],ok:false,music:{on:false,url:''},age:19,h:172,w:60,mode:'chrono',theme:'auto',beep:true,auto:false,rest:'',start:key(new Date())},done:{},full:{},pct:{},secs:{},water:{},body:[]});
 let S=DEF();
 try{const o=JSON.parse(localStorage.getItem('mc45'));if(o)S=clean(o,1)}catch(e){}
 const save=()=>{try{localStorage.setItem('mc45',JSON.stringify(S))}catch(e){alert('Sauvegarde impossible : stockage plein ou bloqué par le navigateur.')}};
@@ -198,25 +198,49 @@ function musSync(){let b=$('#mus');if(!b){b=document.createElement('div');b.id='
 addEventListener('online',musSync);addEventListener('offline',musSync);
 V.setup=()=>`<div class="card hero"><h1>Bienvenue 💪</h1><p>Avant de commencer, dis-moi si tu as du matériel : ton programme et tes exercices s\u2019adapteront.</p></div>${eqH().replace('<h2>Paramètres</h2>','<h2>Ton profil</h2>')}<button class="btn y" style="width:100%" onclick="S.p.ok=true;save();go('home')">Commencer</button>`;
 const _hh=V.home;V.home=()=>_hh().replace('<div class="card">','<div class="card hero">').replace('<h1>Bonjour 👋</h1>',`<h1>Bonjour${S.p.name?', '+esc(S.p.name):''} 👋</h1>`);
-// ---- Musique d'aérobic générée (hors ligne, sans droits d'auteur)
-const AERO={t:0,p:null,g:null,step:0,next:0,nb:null};
-const PROF={cardio:{bpm:140,drive:1},force:{bpm:112,drive:1},core:{bpm:124,drive:1},calm:{bpm:72,drive:0},rest:{bpm:88,drive:0,soft:1}};
+// ---- Musique d'aérobic générée (5 styles) + ma musique
+const AERO={t:0,k:null,own:0,g:null,step:0,next:0,nb:null,st:null,tr:0,v:0,url:null},AU=typeof Audio!='undefined'?new Audio():{play(){return Promise.resolve()},pause(){}};AU.loop=true;
+let OWN=[],OC='cardio';try{OWN=JSON.parse(localStorage.getItem('mc45t')||'[]').filter(t=>t&&typeof t.id=='string'&&['cardio','force','calm'].includes(t.cat)).slice(0,60)}catch(e){}
+const hash=x=>{let h=0;for(const c of String(x))h=(h*31+c.charCodeAt(0))>>>0;return h};
 const profOf=(e,ph)=>ph=='rest'||ph=='wait'||ph=='done'?'rest':e.g=='Cardio'?'cardio':['Mobilité','Posture','Cheveux'].includes(e.g)?'calm':['Abdos','Tronc'].includes(e.g)?'core':'force';
-function sndCfg(){return`<div class="card"><h2>🎧 Sons</h2><label class="f"><input type="checkbox" style="width:auto;min-height:0" ${S.p.tick?'checked':''} onchange="sp('tick',this.checked)"> Bip à chaque seconde du chronomètre (plus aigu sur les 3 dernières secondes)</label><label class="f"><input type="checkbox" style="width:auto;min-height:0" ${S.p.aero?'checked':''} onchange="sp('aero',this.checked)"> Musique d\u2019aérobic adaptée à l\u2019exercice</label><label class="f">Volume de la musique<input type="range" min="0" max="100" value="${Math.round((S.p.vol||0)*100)}" oninput="sv(this.value)"></label><p class="m">La musique est générée par l\u2019app (hors ligne, sans droits d\u2019auteur) : rythme rapide pour le cardio, soutenu pour la force et les abdos, calme pour les étirements, doux pendant la récupération.</p></div>`}
-function sv(v){S.p.vol=+v/100;save();if(AERO.g)AERO.g.gain.value=S.p.vol}
+const STY={dance:{n:'Dance',bpm:126,k:'x...x...x...x...',s:'....x.......x...',h:'..x...x...x...x.',b:'..1...1...1...5.',l:'1.3.5.3.1.3.5.6.',pr:[220,174.6,261.6,196],w:'sawtooth',pad:1},
+ afro:{n:'Afrobeat',bpm:106,k:'x.....x.x.....x.',s:'....x..x....x...',h:'x.xxx.xxx.xxx.xx',b:'1..1..5..1..3...',l:'..3..5..3..2.1..',pr:[196,220,174.6,196],w:'triangle'},
+ hiphop:{n:'Hip-hop',bpm:92,k:'x.....x..x......',s:'....x.......x...',h:'x.x.x.x.x.x.x.xx',b:'1.....1..5......',l:'3...2...1...5...',pr:[110,98,130.8,98],w:'square'},
+ latin:{n:'Latino',bpm:96,k:'x...x...x...x...',s:'...x..x....x..x.',h:'..x...x...x...x.',b:'1..1..1.5..1..1.',l:'5..3..1...3.5...',pr:[220,196,174.6,196],w:'triangle',pad:1},
+ chill:{bpm:70,pr:[261.6,220,174.6,196],ch:1},soft:{bpm:88,k:'x...x...x...x...',soft:1}};
+const CAND={cardio:['dance','afro','latin'],force:['hiphop','afro','dance'],core:['latin','dance','hiphop'],calm:['chill'],rest:['soft']},RT=[1,1.2,1.333,1.5,1.8,2];
+function sndCfg(){const so=Object.keys(STY).filter(k=>STY[k].n);return`<div class="card"><h2>🎧 Sons</h2><label class="f"><input type="checkbox" style="width:auto;min-height:0" ${S.p.tick?'checked':''} onchange="sp('tick',this.checked)"> Bip à chaque seconde du chronomètre (plus aigu sur les 3 dernières secondes)</label><label class="f"><input type="checkbox" style="width:auto;min-height:0" ${S.p.aero?'checked':''} onchange="sp('aero',this.checked)"> Musique d\u2019entraînement adaptée à l\u2019exercice</label><label class="f">Style<select onchange="sp('style',this.value)"><option value="auto">Automatique (varie selon l\u2019exercice)</option>${so.map(k=>`<option value="${k}" ${S.p.style==k?'selected':''}>${STY[k].n}</option>`).join('')}</select></label><label class="f">Volume de la musique<input type="range" min="0" max="100" value="${Math.round((S.p.vol||0)*100)}" oninput="sv(this.value)"></label><p class="m">En mode automatique, chaque exercice a son propre son : Dance, Afrobeat, Hip-hop ou Latino pour le cardio, la force et les abdos ; ambiance calme pour les étirements ; battement doux pendant la récupération. Musique générée par l\u2019app, hors ligne.</p>${ownCfg()}</div>`}
+function ownCfg(){const lb={cardio:'cardio',force:'force',calm:'calme'};return`<h3>Ma musique (fichiers de ton téléphone)</h3><p class="m">Ajoute tes propres morceaux : ils restent sur l\u2019appareil et jouent hors ligne. Une piste différente est choisie selon l\u2019exercice.</p><label class="f"><input type="checkbox" style="width:auto;min-height:0" ${S.p.own?'checked':''} onchange="sp('own',this.checked)"> Utiliser ma musique quand j\u2019en ai</label><select aria-label="Catégorie" onchange="OC=this.value">${[['cardio','Cardio (rapide)'],['force','Force et abdos'],['calm','Étirements (calme)']].map(o=>`<option value="${o[0]}" ${OC==o[0]?'selected':''}>${o[1]}</option>`).join('')}</select><label class="btn g" style="display:block;text-align:center;margin-top:8px">Ajouter des morceaux<input type="file" accept="audio/*" multiple hidden onchange="addTr(this.files)"></label>${OWN.map(t=>`<div class="it"><span class="n">${esc(t.name)} <small class="m">· ${lb[t.cat]}</small></span><button class="btn g" style="flex:none" onclick="delTr('${t.id}')" aria-label="Supprimer">🗑</button></div>`).join('')}`}
+const idb=()=>new Promise((ok,ko)=>{const r=indexedDB.open('mc45m',1);r.onupgradeneeded=()=>r.result.createObjectStore('t',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)});
+const dbp=async(m,x)=>{const d=await idb();return new Promise((ok,ko)=>{const t=d.transaction('t',m=='get'?'readonly':'readwrite'),q=t.objectStore('t')[m](x);t.oncomplete=()=>ok(q.result);t.onerror=()=>ko(t.error)})};
+const svT=()=>{try{localStorage.setItem('mc45t',JSON.stringify(OWN))}catch(e){}};
+async function addTr(fs){for(const f of fs){if(!/^audio\//.test(f.type)||f.size>5e7){alert('Ignoré : '+f.name+' (audio de moins de 50 Mo)');continue}if(OWN.length>=60){alert('Limite de 60 morceaux atteinte.');break}const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);try{await dbp('put',{id,blob:f});OWN.push({id,cat:OC,name:f.name.slice(0,40)})}catch(e){alert('Stockage impossible pour '+f.name)}}svT();render()}
+async function delTr(id){try{await dbp('delete',id)}catch(e){}OWN=OWN.filter(t=>t.id!=id);svT();render()}
+function sv(v){S.p.vol=+v/100;save();if(AERO.g)AERO.g.gain.value=S.p.vol;AU.volume=S.p.vol}
 function nz(a){if(!AERO.nb){const b=a.createBuffer(1,a.sampleRate*.5,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AERO.nb=b}return AERO.nb}
 function nv(a,t,f,type,gn,d,q){const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(gn,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);if(q){const l=a.createBiquadFilter();l.type='lowpass';l.frequency.value=q;o.connect(l);l.connect(g)}else o.connect(g);g.connect(AERO.g);o.start(t);o.stop(t+d+.02)}
 function ns(a,t,hp,gn,d){const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=nz(a);f.type=hp>3000?'highpass':'bandpass';f.frequency.value=hp;g.gain.setValueAtTime(gn,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(AERO.g);s.start(t);s.stop(t+d+.02)}
-function aStep(a,t,s,P){const R=[110,110,98,146.8][Math.floor(s/8)%4],pent=[220,261.6,293.7,329.6,392,440],v=P.soft?.5:1;
- if(P.drive){if(s%2==0){const o=a.createOscillator(),g=a.createGain();o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g);g.connect(AERO.g);o.start(t);o.stop(t+.22);nv(a,t,R/2,'sawtooth',.28,.28,380)}
-  if(s%8==2||s%8==6)ns(a,t,1800,.5,.14);if(s%2==1)ns(a,t,7000,.22,.05);
-  if(s%2==1||s%4==0)nv(a,t,pent[[0,2,4,2,5,4,2,1][s%8]],'triangle',.09,.16)}
- else if(P.soft){if(s%4==0){nv(a,t,70,'sine',.35*v,.25)}}
- else{if(s%16==0)[R,R*1.25,R*1.5].forEach(f=>nv(a,t,f*2,'sine',.07,2.4));if(s%4==0)nv(a,t,pent[(s/4)%6|0],'sine',.05,.6);if(s%8==0)nv(a,t,60,'sine',.25,.3)}}
-function aTick(){const a=AC;if(!a||!AERO.p)return;const P=PROF[AERO.p];while(AERO.next<a.currentTime+.15){aStep(a,AERO.next,AERO.step,P);AERO.next+=60/P.bpm/2;AERO.step++}}
-function aStart(p){const a=ac();if(!a)return;if(AERO.p===p&&AERO.t)return;aStop();if(!AERO.g||AERO.g.context!==a){AERO.g=a.createGain();AERO.g.connect(a.destination)}AERO.g.gain.value=S.p.vol;AERO.p=p;AERO.step=0;AERO.next=a.currentTime+.05;AERO.t=setInterval(aTick,25)}
-function aStop(){if(AERO.t){clearInterval(AERO.t);AERO.t=0}AERO.p=null}
-function aeroSync(){let p=null;try{if(S.p.aero){if(X&&X.run)p=profOf(session(pk(cur)).it[X.i].e,X.ph);else if(PL.Y&&PL.Y.run)p=profOf(PL.list[PL.Y.i].e,PL.Y.ph)}}catch(e){}p?aStart(p):aStop()}
+function kick(a,t,v){const o=a.createOscillator(),g=a.createGain();o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);g.gain.setValueAtTime(.9*v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g);g.connect(AERO.g);o.start(t);o.stop(t+.22)}
+function aStep(a,t,s){const Z=STY[AERO.st],x=s%16,bar=Math.floor(s/16)%4,at=p=>p&&p[x]&&p[x]!='.';
+ if(Z.soft){if(x%4==0)kick(a,t,.3);return}const R=Z.pr[bar]*Math.pow(2,AERO.tr/12);
+ if(Z.ch){if(x==0)[1,1.2,1.5].forEach(r=>nv(a,t,R*r,'sine',.06,3.2));if(x%4==0)nv(a,t,R*2*RT[((s>>2)*5+AERO.v)%6],'sine',.05,.9);return}
+ if(at(Z.k))kick(a,t,1);if(at(Z.s)){ns(a,t,1800,.5,.14);nv(a,t,190,'triangle',.18,.08)}if(at(Z.h))ns(a,t,7000,x%4==2?.28:.16,.05);
+ if(at(Z.b)){const d=Z.b[x],f=R/2*(d=='5'?1.5:d=='3'?1.2:1),hh=AERO.st=='hiphop';nv(a,t,f,hh?'sine':'sawtooth',hh?.55:.3,.3,hh?0:420)}
+ if(at(Z.l)){const d=+Z.l[x],o=bar==3&&AERO.v?1.5:1;nv(a,t,R*2*RT[d-1]*o,Z.w,.08,.2,Z.w=='sawtooth'?2200:Z.w=='square'?900:0)}
+ if(Z.pad&&x==0)[1,1.2,1.5].forEach(r=>nv(a,t,R*r*2,'sine',.04,1.8));
+ if(bar==3&&x>=12&&AERO.st!='afro')ns(a,t,1800,.22,.08)}
+function aTick(){const a=AC;if(!a||!AERO.st)return;const bpm=STY[AERO.st].bpm;while(AERO.next<a.currentTime+.15){aStep(a,AERO.next,AERO.step);AERO.next+=60/bpm/4;AERO.step++}}
+function genStart(p,id){const a=ac();if(!a)return;const c=CAND[p],pick=S.p.style!='auto'&&STY[S.p.style]&&c.length>1?S.p.style:c[hash(id)%c.length];
+ if(!AERO.g||AERO.g.context!==a){AERO.g=a.createGain();AERO.g.connect(a.destination)}AERO.g.gain.value=S.p.vol;
+ AERO.st=pick;AERO.tr=hash(id+'k')%6;AERO.v=hash(id+'v')%2;AERO.step=0;AERO.next=a.currentTime+.05;AERO.t=setInterval(aTick,25)}
+async function ownPlay(cat,key){try{const L=OWN.filter(t=>t.cat==cat),t=L[hash(key)%L.length],rec=await dbp('get',t.id);if(!rec)return false;if(AERO.k!==key)return true;if(AERO.url)URL.revokeObjectURL(AERO.url);AERO.url=URL.createObjectURL(rec.blob);AU.src=AERO.url;AU.volume=S.p.vol;await AU.play();return true}catch(e){return false}}
+function aStop(){if(AERO.t){clearInterval(AERO.t);AERO.t=0}if(AERO.own){try{AU.pause()}catch(e){}}AERO.own=0;AERO.st=null;AERO.k=null}
+function aStart(p,id){if(AERO.own&&p=='rest'){AU.volume=S.p.vol*.35;return}const key=p+':'+id;
+ if(AERO.k===key&&(AERO.t||AERO.own)){if(AERO.own)AU.volume=S.p.vol;return}
+ aStop();AERO.k=key;const cat=p=='cardio'?'cardio':p=='calm'?'calm':p=='rest'?null:'force';
+ if(cat&&S.p.own&&OWN.some(t=>t.cat==cat)){AERO.own=1;ownPlay(cat,key).then(ok=>{if(!ok&&AERO.k===key){AERO.own=0;genStart(p,id)}});return}
+ genStart(p,id)}
+function aeroSync(){let p=null,id='';try{if(S.p.aero){let e,ph;if(X&&X.run){e=session(pk(cur)).it[X.i].e;ph=X.ph}else if(PL.Y&&PL.Y.run){e=PL.list[PL.Y.i].e;ph=PL.Y.ph}if(e){p=profOf(e,ph);id=p=='rest'?'rest':e.id}}}catch(e){}p?aStart(p,id):aStop()}
 if(!S.p.ok)tab='setup';render();
 // ---- Sécurité : code de verrouillage local
 const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(x=>x.toString(16).padStart(2,'0')).join('');
