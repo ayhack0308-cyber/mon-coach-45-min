@@ -27,3 +27,31 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px;borde
 :focus-visible{outline:3px solid var(--y);outline-offset:2px}
 @media(min-width:800px){main{padding:24px}nav{justify-content:center}nav button{max-width:110px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---- Design pro */
+:root{--bg:#f2f5fb;--bd:#e3e9f5;--sh:0 8px 24px rgba(15,35,95,.08)}
+[data-theme=dark]{--bg:#060b1f;--c:#0e1736;--bd:#1b2a58;--sh:0 8px 24px rgba(0,0,0,.35)}
+header{position:sticky;top:0;z-index:4;background:linear-gradient(120deg,#07123a,#1d4ed8);box-shadow:0 4px 18px rgba(7,18,58,.35)}
+header b{font-weight:800;letter-spacing:1.2px}
+.card{border:0;box-shadow:var(--sh);border-radius:22px;padding:16px}
+.card.hero{background:linear-gradient(135deg,#1d4ed8,#0b1b4d);color:#fff}.card.hero h1,.card.hero p{color:#fff}
+.btn{border-radius:16px;box-shadow:0 4px 12px rgba(37,99,255,.28);transition:transform .15s}.btn:active{transform:scale(.97)}.btn.g{box-shadow:none}.btn.y{box-shadow:0 4px 12px rgba(255,196,0,.35)}
+h1{font-weight:800;letter-spacing:-.3px}h2{font-weight:700}
+nav{background:color-mix(in srgb,var(--c) 92%,transparent);backdrop-filter:blur(14px);border:0;box-shadow:0 -6px 24px rgba(15,35,95,.1);border-radius:22px 22px 0 0}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;font-size:11px}nav button small{font-size:11px}
+nav button.on{color:var(--e)}nav button.on::before{content:"";position:absolute;top:0;width:28px;height:3px;border-radius:0 0 4px 4px;background:var(--y)}
+.chip{border-radius:14px;font-weight:600}
+.prof{display:flex;align-items:center;gap:14px}.av{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--e),#0b1b4d);color:#fff;display:grid;place-items:center;font:800 24px system-ui;flex:none}.av svg{width:30px;height:30px}
+.seg{display:flex;background:var(--bd);border-radius:16px;padding:4px;margin:10px 0}.seg button{flex:1;min-height:44px;border:0;border-radius:12px;background:none;color:var(--m);font:600 15px inherit;cursor:pointer}.seg .on{background:var(--c);color:var(--e);box-shadow:0 2px 8px rgba(15,35,95,.12)}
+#mus{position:fixed;left:8px;right:8px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:6;border-radius:16px;overflow:hidden;box-shadow:var(--sh);background:#000}
+.big{background:linear-gradient(90deg,var(--e),var(--b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* ---- Design pro v2 */
+#lk{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:20px}#lk[hidden]{display:none}#lk .card{width:min(360px,100%)}
+.hero .m{color:#cfe0ff}.hero .bar{background:rgba(255,255,255,.25)}.hero h2{color:#fff}.hero b{color:#fff}
+.card h2{display:flex;align-items:center;gap:8px}
+.it{transition:background .2s}.it.d{background:color-mix(in srgb,var(--ok) 8%,transparent);border-radius:12px}
+.bar{height:14px}.bar i{border-radius:9px}
+input[type=checkbox]{cursor:pointer}
+main>h1{margin-top:6px;background:linear-gradient(90deg,var(--t),var(--b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+button.chip.on{background:linear-gradient(135deg,var(--e),#1d4ed8);box-shadow:0 4px 12px rgba(37,99,255,.3);border-color:transparent}
+.card[onclick]:hover{transform:translateY(-2px);transition:transform .2s}
+@media(prefers-reduced-motion:reduce){.card[onclick]:hover{transform:none}}
